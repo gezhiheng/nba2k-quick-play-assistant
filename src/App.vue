@@ -6,11 +6,12 @@ import { teams, allocation, allocationFns } from './constants'
 
 const draftResult = reactive([])
 
-const cardVisible = reactive({
+const visible = reactive({
   preSet: true,
   nameSet: false,
   draft: false,
   result: false,
+  drawer: false,
 })
 const preSetForm = reactive({
   playersNum: 2,
@@ -107,11 +108,11 @@ function draftBtn() {
 }
 
 function toggleCardVisible(key) {
-  for (let prop in cardVisible) {
-    cardVisible[prop] = false
+  for (let prop in visible) {
+    visible[prop] = false
   }
   setTimeout(() => {
-    cardVisible[key] = true
+    visible[key] = true
   }, 300)
 }
 </script>
@@ -120,7 +121,7 @@ function toggleCardVisible(key) {
   <div class="container">
     
     <Transition>
-      <el-card v-show="cardVisible.preSet" style="width: 280px" shadow="hover">
+      <el-card v-show="visible.preSet" style="width: 280px" shadow="hover">
         <template #header>
           <text>前置设置</text>
         </template>
@@ -139,7 +140,7 @@ function toggleCardVisible(key) {
     </Transition>
 
     <Transition>
-      <el-card v-show="cardVisible.nameSet" style="width: 280px" shadow="hover">
+      <el-card v-show="visible.nameSet" style="width: 280px" shadow="hover">
         <template #header>
           <text>名称设置</text>
         </template>
@@ -153,7 +154,7 @@ function toggleCardVisible(key) {
     </Transition>
 
     <Transition>
-      <el-card v-show="cardVisible.draft" style="width: 1000px" shadow="hover">
+      <el-card v-show="visible.draft" style="width: 1000px" shadow="hover">
         <template #header>
           <text>球队选秀</text>
         </template>
@@ -166,8 +167,27 @@ function toggleCardVisible(key) {
             </text>
           </text>
           <div>
-            <!-- TODO 添加drawer来展示选秀时的信息 -->
-            <el-button type="primary" circle>
+            <el-drawer
+              v-model="visible.drawer"
+              title="选秀情况"
+              direction="rtl"
+            >
+              <el-card v-for="item in draftResult" style="margin-bottom: 16px;" shadow="hover">
+                <template #header>
+                  <text>{{ item.name }}</text>
+                </template>
+                <TransitionGroup class="team-grid" name="list" tag="ul">
+                  <li v-for="teamName in item.teams" :key="teamName">
+                    <TeamLogo
+                      :name="teamName"
+                      width="80"
+                      :is-selected="true"
+                    />
+                  </li>
+                </TransitionGroup>
+              </el-card>
+            </el-drawer>
+            <el-button type="primary" circle @click="() => visible.drawer = true">
               <el-icon><MoreFilled /></el-icon>
             </el-button>
             <el-button type="primary" plain @click="draftBtn">确定</el-button>
@@ -187,10 +207,8 @@ function toggleCardVisible(key) {
     </Transition>
 
     <Transition>
-      <el-card v-show="cardVisible.result" style="width: 80%;" shadow="never">
-        <template #header>
-          <text>选秀结果</text>
-        </template>
+      <div v-show="visible.result" style="width: 80%;" shadow="never">
+        <h1 style="margin: 12px 0;">选秀情况</h1>
         <el-card v-for="item in draftResult" style="margin-bottom: 16px;" shadow="hover">
           <template #header>
             <text>{{ item.name }}</text>
@@ -205,7 +223,7 @@ function toggleCardVisible(key) {
             </li>
           </TransitionGroup>
         </el-card>
-      </el-card>
+      </div>
     </Transition>
 
     <!-- TODO 实现玩家对决的组件or页面 -->
